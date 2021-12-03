@@ -9,6 +9,6 @@ jobs:
         with:
           node-version: '14'
       - run: whoami
-      - run: apt-get install jq
+      - run: sudo apt-get install jq
       - run: jq --version
 
