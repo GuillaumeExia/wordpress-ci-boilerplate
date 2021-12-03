@@ -1,14 +1,24 @@
 name: learn-github-actions
-on: [push]
+
+on:
+  push:
+    branches:
+      - 'feature/*'
+
 jobs:
   check-bats-version:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
+      - name: Checkout
+        uses: actions/checkout@v2
+        
+      - name: Setup Node
+        uses: actions/setup-node@v2
         with:
           node-version: '14'
-      - run: whoami
-      - run: sudo apt-get install jq
-      - run: jq --version
-
+      
+      - name: Install JQ
+        run: whoami
+        run: sudo apt-get install jq
+        run: jq --version
+      
