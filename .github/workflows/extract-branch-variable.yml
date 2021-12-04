@@ -25,6 +25,16 @@ jobs:
           port: ${{ secrets.PORT }}
           script: |
             cd wordpress-boilerplate/
-            yq e '.services.web.image = "nginx:1.21-alpine"' -i docker-compose.yml
-            docker-compose pull
-            docker-compose up -d
+            #yq e '.services.web.image = "nginx:1.21-alpine"' -i docker-compose.yml
+            /home/ubuntu/.local/bin/yq -y --arg featureName "new-workflow" --arg image "nginx:alpine" '
+              .services += {
+                "feature_\($featureName)":
+                {
+                  image: $image,
+                  networks: ["web"],
+                  ports: ["8081:80"],
+                  restart: "always"
+                }
+              }' docker-compose.yml
+            #docker-compose pull
+            #docker-compose up -d
