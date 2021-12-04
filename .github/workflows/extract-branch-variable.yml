@@ -1,0 +1,17 @@
+name: extract-branch-variable
+
+on:
+  push:
+    branches: ['feature/*']
+
+jobs:
+  extract-branch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Extract Branch
+        id: extract_branch
+        shell: bash
+        run: echo "::set-output name=branch::${GITHUB_REF#refs/heads/feature/}"
+      
+      - name: Display Branch
+        run: echo "${{ steps.extract_branch.outputs.branch }}"
