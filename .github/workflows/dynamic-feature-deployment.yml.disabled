@@ -37,6 +37,11 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
       
+      - name: Extract Branch
+        id: extract_branch
+        shell: bash
+        run: echo "::set-output name=branch::${GITHUB_REF#refs/heads/feature/}"
+      
       - name: Install JQ
         run:  |
           whoami
