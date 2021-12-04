@@ -23,4 +23,8 @@ jobs:
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.KEY }}
           port: ${{ secrets.PORT }}
-          script: whoami
+          script: |
+            cd wordpress-boilerplate/
+            yq e '.services.web.image = \"nginx:1.21-alpine\"' -i docker-compose.yml
+            docker-compose pull
+            docker-compose up -d
