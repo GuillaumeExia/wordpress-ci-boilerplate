@@ -27,7 +27,7 @@ jobs:
             echo $(whoami) > /tmp/whoami.log
             cd wordpress-boilerplate/
             #yq e '.services.web.image = "nginx:1.21-alpine"' -i docker-compose.yml
-            /home/ubuntu/.local/bin/yq -y --arg featureName "new-workflow" --arg image "nginx:alpine" '
+            yq -y --arg featureName "new-workflow" --arg image "nginx:alpine" '
               .services += {
                 "feature_\($featureName)":
                 {
