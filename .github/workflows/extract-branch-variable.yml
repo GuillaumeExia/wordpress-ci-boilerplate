@@ -38,6 +38,6 @@ jobs:
                   restart: "always"
                 }
               }
-            ' -i docker-compose.yml
+            ' docker-compose.yml | sponge docker-compose.yml
             #docker-compose pull
             #docker-compose up -d
