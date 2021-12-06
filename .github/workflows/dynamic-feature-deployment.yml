@@ -73,6 +73,5 @@ jobs:
                 }
               }
             ' docker-compose.yml
-            ## edit in-place
-            #docker-compose pull
-            #docker-compose up -d
+            docker-compose pull
+            docker-compose up -d
