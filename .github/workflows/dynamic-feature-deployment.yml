@@ -46,7 +46,7 @@ jobs:
         uses: appleboy/ssh-action@master
         env:
           FEATURE: ${{ steps.extract_branch.outputs.branch }}
-          IMAGE: 
+          IMAGE: ${{ steps.meta.outputs.tags }}
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
@@ -66,5 +66,5 @@ jobs:
                 }
               }
             ' docker-compose.yml | sponge docker-compose.yml
-            docker-compose pull
-            docker-compose up -d
+            #docker-compose pull
+            #docker-compose up -d
