@@ -24,25 +24,18 @@ jobs:
           key: ${{ secrets.KEY }}
           port: ${{ secrets.PORT }}
           script: |
+            set -eux
             cd wordpress-boilerplate/
-            ## if service exists
-            if ! grep -qR "new-workflow" docker-compose.yml; then
-              echo "Feature exists - updating"
-              #docker-compose pull
-              #docker-compose up -d
-            else
-              echo "Deploying new feature"
-              yq -y --arg featureName "new-workflow" --arg image "nginx:1.21.3-alpine" '
-                .services += {
-                  "feature_\($featureName)":
-                  {
-                    image: $image,
-                    networks: ["web"],
-                    ports: ["8081:80"],
-                    restart: "always"
-                  }
+            yq -y --arg featureName "new-workflow" --arg image "nginx:1.21.4-alpine" '
+              .services += {
+                "feature_\($featureName)":
+                {
+                  image: $image,
+                  networks: ["web"],
+                  ports: ["8081:80"],
+                  restart: "always"
                 }
-              ' docker-compose.yml | sponge docker-compose.yml
-              #docker-compose pull
-              #docker-compose up -d
-            fi
+              }
+            ' docker-compose.yml | sponge docker-compose.yml
+            #docker-compose pull
+            #docker-compose up -d
