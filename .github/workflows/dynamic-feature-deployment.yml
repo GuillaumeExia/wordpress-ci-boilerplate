@@ -55,16 +55,24 @@ jobs:
           envs: FEATURE,IMAGE
           script: |
             cd wordpress-boilerplate/
-            yq -y --arg featureName "$FEATURE" --arg image "$IMAGE" '
+            yq -i -y --arg featureName "$FEATURE" --arg image "$IMAGE" '
               .services += {
                 "feature_\($featureName)":
                 {
                   image: $image,
+                  container_name: $featureName,
                   networks: ["web"],
-                  ports: ["8081:80"],
-                  restart: "always"
+                  labels: [
+                    "traefik.enable=true",
+                    "traefik.http.routers.secure.rule=Host(`\($featureName).learndevops.it`)",
+                    "traefik.http.routers.secure.entrypoints=websecure",
+                    "traefik.http.routers.secure.tls=true",
+                    "traefik.http.routers.secure.middlewares=authelia@docker"
+                  ],
+                  restart: "unless-stopped"
                 }
               }
-            ' docker-compose.yml | sponge docker-compose.yml
+            ' docker-compose.yml
+            ## edit in-place
             #docker-compose pull
             #docker-compose up -d
