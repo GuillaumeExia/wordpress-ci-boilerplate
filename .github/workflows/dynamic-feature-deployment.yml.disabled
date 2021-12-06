@@ -42,8 +42,29 @@ jobs:
         shell: bash
         run: echo "::set-output name=branch::${GITHUB_REF#refs/heads/feature/}"
       
-      - name: Install JQ
-        run:  |
-          whoami
-          sudo apt-get install jq
-          jq --version
+      - name: Deploy/Update Feature
+        uses: appleboy/ssh-action@master
+        env:
+          FEATURE: ${{ steps.extract_branch.outputs.branch }}
+          IMAGE: 
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.KEY }}
+          port: ${{ secrets.PORT }}
+          envs: FEATURE,IMAGE
+          script: |
+            cd wordpress-boilerplate/
+            yq -y --arg featureName "$FEATURE" --arg image "$IMAGE" '
+              .services += {
+                "feature_\($featureName)":
+                {
+                  image: $image,
+                  networks: ["web"],
+                  ports: ["8081:80"],
+                  restart: "always"
+                }
+              }
+            ' docker-compose.yml | sponge docker-compose.yml
+            docker-compose pull
+            docker-compose up -d
