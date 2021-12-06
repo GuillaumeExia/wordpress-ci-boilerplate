@@ -16,7 +16,7 @@ jobs:
       - name: Display Branch
         run: echo "${{ steps.extract_branch.outputs.branch }}"
         
-      - name: SSH Connect
+      - name: Deploy/Update Feature
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.HOST }}
@@ -26,18 +26,23 @@ jobs:
           script: |
             cd wordpress-boilerplate/
             ## if service exists
-            #yq e '.services.web.image = "nginx:1.21-alpine"' -i docker-compose.yml
-            ## else
-            yq -y --arg featureName "new-workflow" --arg image "nginx:1.21.4-alpine" '
-              .services += {
-                "feature_\($featureName)":
-                {
-                  image: $image,
-                  networks: ["web"],
-                  ports: ["8081:80"],
-                  restart: "always"
+            if ! grep -qR "new-workflow" docker-compose.yml; then
+              echo "Feature exists - updating"
+              #docker-compose pull
+              #docker-compose up -d
+            else
+              echo "Deploying new feature"
+              yq -y --arg featureName "new-workflow" --arg image "nginx:1.21.4-alpine" '
+                .services += {
+                  "feature_\($featureName)":
+                  {
+                    image: $image,
+                    networks: ["web"],
+                    ports: ["8081:80"],
+                    restart: "always"
+                  }
                 }
-              }
-            ' docker-compose.yml | sponge docker-compose.yml
-            #docker-compose pull
-            #docker-compose up -d
+              ' docker-compose.yml | sponge docker-compose.yml
+              #docker-compose pull
+              #docker-compose up -d
+            fi
