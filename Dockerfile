@@ -1,1 +1,1 @@
-FROM traefik/whoami
+FROM nginx:1.21-alpine
