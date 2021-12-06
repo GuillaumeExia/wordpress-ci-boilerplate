@@ -39,5 +39,8 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
       
       - name: Display Output
-        run : echo ${{ steps.docker_build.outputs.metadata }}
-          
+        run : |
+          echo ${{ env.REGISTRY }}
+          echo ${{ env.IMAGE_NAME }}
+          echo ${{ steps.meta.outputs.tags }}
+          echo ${{ steps.meta.outputs.labels }}
