@@ -24,11 +24,11 @@ jobs:
           key: ${{ secrets.KEY }}
           port: ${{ secrets.PORT }}
           script: |
-            #echo $(whoami) > /tmp/whoami.log
             cd wordpress-boilerplate/
+            ## if service exists
             #yq e '.services.web.image = "nginx:1.21-alpine"' -i docker-compose.yml
-            #~/.local/bin/yq -y --arg featureName "new-workflow" --arg image "nginx:1.21.4-alpine" '
-            yq -y --arg featureName "new-workflow" --arg image "nginx:alpine" '
+            ## else
+            yq -y --arg featureName "new-workflow" --arg image "nginx:1.21.4-alpine" '
               .services += {
                 "feature_\($featureName)":
                 {
@@ -38,6 +38,6 @@ jobs:
                   restart: "always"
                 }
               }
-            ' docker-compose.yml
+            ' -i docker-compose.yml
             #docker-compose pull
             #docker-compose up -d
