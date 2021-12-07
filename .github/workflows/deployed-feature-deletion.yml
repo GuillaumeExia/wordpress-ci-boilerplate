@@ -1,0 +1,29 @@
+name: deployed-feature-deletion
+
+on:
+  delete:
+    branches: ['feature/*']
+
+jobs:
+  delete-feature:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Extract Branch
+        id: extract_branch
+        shell: bash
+        run: echo "::set-output name=branch::${GITHUB_REF#refs/heads/feature/}"
+      
+      - name: Delete Feature
+        uses: appleboy/ssh-action@master
+        env:
+          FEATURE: ${{ steps.extract_branch.outputs.branch }}
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.KEY }}
+          port: ${{ secrets.PORT }}
+          envs: FEATURE
+          script: |
+            cd wordpress-boilerplate/
+            yq -y --arg featureName "$FEATURE" 'del(.services | ."feature_\($featureName)")' docker-compose.yml
+            docker-compose up -d --remove-orphans

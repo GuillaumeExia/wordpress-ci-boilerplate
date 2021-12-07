@@ -1,0 +1,77 @@
+name: dynamic-feature-deployment
+
+on:
+  push:
+    branches: ['feature/*']
+      #- 'feature/*'
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  build-push-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        
+      - name: Login to Registry
+        uses: docker/login-action@f054a8b539a109f9f41c372932f1ae047eff08c9
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Extract Metadata
+        id: meta
+        uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+      
+      - name: Build & Push Image
+        uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+      
+      - name: Extract Branch
+        id: extract_branch
+        shell: bash
+        run: echo "::set-output name=branch::${GITHUB_REF#refs/heads/feature/}"
+      
+      - name: Deploy/Update Feature
+        uses: appleboy/ssh-action@master
+        env:
+          FEATURE: ${{ steps.extract_branch.outputs.branch }}
+          IMAGE: ${{ steps.meta.outputs.tags }}
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.KEY }}
+          port: ${{ secrets.PORT }}
+          envs: FEATURE,IMAGE
+          script: |
+            cd wordpress-boilerplate/
+            yq -i -y --arg featureName "$FEATURE" --arg image "$IMAGE" '
+              .services += {
+                "feature_\($featureName)":
+                {
+                  image: $image,
+                  container_name: $featureName,
+                  networks: ["web"],
+                  labels: [
+                    "traefik.enable=true",
+                    "traefik.http.routers.\($featureName).rule=Host(`\($featureName).learndevops.it`)",
+                    "traefik.http.routers.\($featureName).entrypoints=websecure",
+                    "traefik.http.routers.\($featureName).tls=true",
+                    "traefik.http.routers.\($featureName).middlewares=authelia@docker"
+                  ],
+                  restart: "unless-stopped"
+                }
+              }
+            ' docker-compose.yml
+            docker-compose pull
+            docker-compose up -d
