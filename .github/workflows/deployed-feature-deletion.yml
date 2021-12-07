@@ -11,7 +11,7 @@ jobs:
       - name: Extract Branch
         id: extract_branch
         shell: bash
-        run: echo "::set-output name=branch::${github.event.ref#feature/}"
+        run: echo "::set-output name=branch::${{ github.event.ref#feature/ }}"
      
       - name: Display Deleted Branch
         run: echo "${{ steps.extract_branch.outputs.branch }}"
