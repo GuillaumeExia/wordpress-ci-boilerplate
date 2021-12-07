@@ -14,7 +14,7 @@ jobs:
         run: echo "::set-output name=branch::${GITHUB_REF#refs/heads/feature/}"
      
       - name: Display Deleted Branch
-        run: echo "${{ github.event.ref_type }}"
+        run: echo "${{ github.event.ref }}"
       
       #- name: Delete Feature
       #  uses: appleboy/ssh-action@master
